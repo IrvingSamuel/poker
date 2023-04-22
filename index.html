@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="botão">
+        <button id="passo" onclick="passo()">Receber Mão</button>
+    </div>
+    <div style="display: flex; flex-direction: row; justify-content: center;">
+        <div id="mao" style="width: 50%; justify-content: left;">
+        
+        </div>
+        <div id="dealer" style="width: 50%; justify-content: right;">
+        
+        </div>
+    </div>
+    
+    <div id="mesa">
+
+    </div>
+    <div id="resultado">
+
+    </div>
+    <script src="poker.js"></script>
+    <script>
+        var p = 0;
+        var mao = [];
+        var dealer = [];
+        var mesa = [];
+        var allhands = [];
+        var players = [];
+        var casa;
+        var resultado;
+        var vencedor = 0;
+        function destaque(){
+            document.getElementById("mao0").style.borderStyle = 'solid';
+            document.getElementById("mao0").style.borderRadius = '5%';
+            document.getElementById("mao0").style.borderColor = 'lime';
+        }
+        function passo(){
+            if(p==0){
+                mao = getmao();
+                dealer = getdealer(mao);
+                console.log(dealer);
+                element = document.getElementById("mao");
+                element.innerHTML = '';
+                for(var x = 0; x < 2; x++){
+                    element.innerHTML += `<img id="mao${x}" src="svgs/${mao[x]}.svg" style="width: 150px; margin: 5px;" alt="">`;
+                }
+                element = document.getElementById("dealer");
+                element.innerHTML = '';
+                for(var x = 0; x < 2; x++){
+                    element.innerHTML += `<img id="dealer${x}" src="svgs/00.svg" style="width: 150px; margin: 5px;" alt="">`;
+                }
+                p = 1;
+                document.getElementById("passo").innerHTML = 'Distribuir cartas da mesa';
+            }
+            else if(p==1){
+                mesa = getmesa(mao, dealer);
+                element = document.getElementById("mesa");
+                element.innerHTML = '';
+                for(var x = 0; x < 3; x++){
+                    element.innerHTML += `<img id="mesa${x}" src="svgs/${mesa[x]}.svg" style="width: 150px; margin: 5px;" alt="">`;
+                }
+                p = 2;
+                document.getElementById("passo").innerHTML = 'Adicionar Bind';
+            }
+            else if(p==2){
+                mesa = turnosome(mesa,mao, dealer);
+                element = document.getElementById("mesa");
+                element.innerHTML = '';
+                for(var x = 0; x < 4; x++){
+                    element.innerHTML += `<img id="mesa${x}" src="svgs/${mesa[x]}.svg" style="width: 150px; margin: 5px;" alt="">`;
+                }
+                p = 3;
+                document.getElementById("passo").innerHTML = 'Adicionar Bind Final';
+            }
+            else if(p==3){
+                mesa = turnosome(mesa,mao, dealer);
+                element = document.getElementById("mesa");
+                element.innerHTML = '';
+                for(var x = 0; x < 5; x++){
+                    element.innerHTML += `<img id="mesa${x}" src="svgs/${mesa[x]}.svg" style="width: 150px; margin: 5px;" alt="">`;
+                }
+                p = 4;
+                document.getElementById("passo").innerHTML = 'Calcular resultado';
+            }
+            else if(p==4){
+                element = document.getElementById("mao");
+                element.innerHTML = '';
+                for(var x = 0; x < 2; x++){
+                    element.innerHTML += `<img id="mao${x}" src="svgs/${mao[x]}.svg" style="width: 150px; margin: 5px;" alt="">`;
+                }
+                element = document.getElementById("mesa");
+                element.innerHTML = '';
+                for(var x = 0; x < 5; x++){
+                    element.innerHTML += `<img id="mesa${x}" src="svgs/${mesa[x]}.svg" style="width: 150px; margin: 5px;" alt="">`;
+                }
+                element = document.getElementById("dealer");
+                element.innerHTML = '';
+                for(var x = 0; x < 2; x++){
+                    element.innerHTML += `<img id="dealer${x}" src="svgs/${dealer[x]}.svg" style="width: 150px; margin: 5px;" alt="">`;
+                }
+                allhands.push(mao);
+                allhands.push(dealer);
+                console.log(allhands);
+                for(var x = 0; x<allhands.length; x++){
+                    var player = [];
+                    resultado = calcularmao(allhands[x], mesa, x);
+                    player.push(resultado[0]);
+                    player.push(resultado[1]);
+                    player.push(resultado[2]);
+                    player.push(resultado[3]);
+                    players.push(player);
+                }
+                console.log(players);
+                if(players[0][1]>players[1][1]){
+                    resultado =  players[0][0] + " Você ganhou da casa!";
+                }
+                else if(players[0][1] == players[1][1]){
+                    let combop = players[0][2];
+                    let comboc = players[1][2];
+                    let kickersp = players[0][3];
+                    let kickersc = players[1][3];
+                    for(var x = 0; x < combop.length; x++){
+                        if(combop[x] > comboc[x]){
+                            vencedor = 1;
+                            resultado = "Ambos tiveram o mesmo jogo, mas o seu Jogo foi maior que o da casa!";
+                        }
+                        else if(combop[x] < comboc[x]){
+                            vencedor = 2;
+                            resultado = "Ambos tiveram o mesmo jogo, mas a casa teve um Jogo maior que o seu!";
+                        }
+                        if(vencedor != 0){
+                            break;
+                        }
+                    }
+                    if(vencedor == 0){
+                        for(var x = 0; x < kickersp.length; x++){
+                            if(kickersp[x] > kickersc[x]){
+                                vencedor = 1;
+                                resultado = "Ambos tiveram o mesmo jogo, mas o seu Kicker foi maior que o da casa!";
+                            }
+                            else if(kickersp[x] < kickersc[x]){
+                                vencedor = 2;
+                                resultado = "Ambos tiveram o mesmo jogo, mas a casa teve um Kicker maior que o seu!";
+                            }
+                            if(vencedor != 0){
+                                break;
+                            }
+                        }
+                    }
+                    if(vencedor == 0){
+                        resultado = "Houve um empate, o pote será dividido!";
+                    }
+
+                }
+                else{
+                    resultado =  players[0][0] + " Mas a casa ganhou com";
+                    casa = players[1][1];
+                    if(casa == 10){
+                        resultado =  resultado + " um Royal Straight Flush!";
+                    }
+                    else if(casa == 9){
+                        resultado =  resultado + " um Straight Flush!";
+                    }
+                    else if(casa == 8){
+                        resultado =  resultado + " uma Quadra!";
+                    }
+                    else if(casa == 7){
+                        resultado =  resultado + " um Full House!";
+                    }
+                    else if(casa == 6){
+                        resultado =  resultado + " um Flush!";
+                    }
+                    else if(casa == 5){
+                        resultado =  resultado + " um Straight!";
+                    }
+                    else if(casa == 4){
+                        resultado =  resultado + " uma Trinca!";
+                    }
+                    else if(casa == 3){
+                        resultado =  resultado + " Dois Pares!";
+                    }
+                    else if(casa == 2){
+                        resultado =  resultado + " um Par!";
+                    }
+                    else if(casa == 1){
+                        resultado =  resultado + " uma Carta mais alta!";
+                    }
+                }
+                element = document.getElementById("resultado");
+                element.innerHTML = resultado;
+                p = 5;
+                document.getElementById("passo").innerHTML = 'Jogar novamente?';
+            }
+            else if(p==5){
+                element = document.getElementById("mao");
+                element.innerHTML = '';
+                element = document.getElementById("dealer");
+                element.innerHTML = '';
+                element = document.getElementById("mesa");
+                element.innerHTML = '';
+                element = document.getElementById("resultado");
+                element.innerHTML = '';
+                mao = [];
+                mesa = [];
+                dealer = [];
+                players = [];
+                player = [];
+                allhands = [];
+                combop = [];
+                comboc = [];
+                kickersp = [];
+                kickersc = [];
+                vencedor = 0;
+                p = 0;
+                casa = 0;
+                resultado = '';
+                document.getElementById("passo").innerHTML = 'Receber Mão';
+            }
+        }
+    </script>
+</body>
+</html>
